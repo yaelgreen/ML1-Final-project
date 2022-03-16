@@ -3,6 +3,7 @@ from part2 import Model
 
 
 def main():
+    download_and_extract_cifar_10_dataset()
     training_set, validation_set, meta = create_training_and_validation_sets()
     convert_pixel_intensity(training_set)
     convert_pixel_intensity(validation_set)
