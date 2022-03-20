@@ -1,6 +1,5 @@
 from typing import Dict
 import numpy as np
-
 from part1 import random_indices, subset_of_data_set
 
 training_set_size = 1000
@@ -29,9 +28,9 @@ class Model():
         self.l2_regularization_coefficient = l2_regularization_coefficient
         self.standard_deviation = standard_deviation
         if not valid:
-            pass #TODO: invalid
-    wight_vectors = None
-    biases = None
+            print("One or more of the parametres to the model is invalid")
+        self.wight_vectors = None
+        self.biases = None
 
     def verify_training_input(self, learning_rate: float,
                               num_of_iterations: int, batch_size: int,
@@ -69,20 +68,41 @@ class Model():
         # init wight_vectors
         self.wight_vectors = np.random.normal(loc=0, scale=self.standard_deviation,
                                               size=(num_of_labels + 1) * training_set_shape)
-        for t in range(num_of_iterations):
+        for iteration_number in range(num_of_iterations):
             # Random batch
-            i_t = random_indices(batch_size, training_set_size)
-            batch = subset_of_data_set(training_set, i_t)
+            training_indices = random_indices(batch_size, training_set_size)
+            # batch = subset_of_data_set(training_set, i_t)
+            for training_index in training_indices:
+                x = self.training_set[b'data'][training_index]
+                for i in range(num_of_labels):
+                    theta_i, b_i = self.get_theta_b_i(i)
+                    self.wight_vectors = self.wight_vectors - self.learning_rate * self.calc_derivative(theta_i, b_i, x)
             self.wight_vectors = self.wight_vectors - learning_rate * self.gradient(batch)
 
-    def training() -> None:
+    def training(self) -> None:
         self.sgd()
-
 
     def inference(self, set_of_instances: np.ndarray) -> np.ndarray:
         if not self.wight_vectors or not self.biases:
             print("You need to train the model before you can run inference")
         pass
+
+    def get_theta_b_i(self, i):
+        theta_i = self.wight_vectors[i:i + training_set_shape]
+        b_i = self.wight_vectors[i + training_set_shape]
+        return theta_i, b_i
+
+    def calc_exp(self, theta_i, b_i, x):
+        return np.exp(np.inner(theta_i, x) + b_i)
+
+    def calc_exp_sum(self, x):
+        sum = 0
+        for j in range(num_of_labels):
+            theta_j, b_j = self.get_theta_b_i(j)
+            sum += self.calc_exp(theta_j, b_j, x)
+
+    def calc_derivative(self, theta_i, b_i, x):
+        self.calc_exp(theta_i, b_i, x) / self.calc_exp_sum(x)
 
 # model = Model()
 # model.training(self)
