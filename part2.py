@@ -104,5 +104,6 @@ class Model():
     def calc_derivative(self, theta_i, b_i, x):
         self.calc_exp(theta_i, b_i, x) / self.calc_exp_sum(x)
 
+
 # model = Model()
 # model.training(self)
