@@ -11,7 +11,7 @@ def main():
     num_of_iterations = 5
     batch_size = 50
     momentum_coefficient = 0.1
-    l2_regularization_coefficient = 0
+    l2_regularization_coefficient = 0.2
     standard_deviation = 1
     model = Model(training_set, learning_rate, num_of_iterations, batch_size,
                    momentum_coefficient, l2_regularization_coefficient,

@@ -1,9 +1,11 @@
 import math
+from pprint import _safe_key
 from typing import Dict
 import numpy as np
 from part1 import random_indices, subset_of_data_set
 import warnings
 warnings.filterwarnings("error")
+from sklearn.linear_model import LinearRegression
 
 training_set_size = 1000
 num_of_labels = 10
@@ -135,11 +137,6 @@ class Model():
         vector = []
         r = [0] * num_of_labels
         r[y] = 1
-        l2_sum = 0
-        for i in range(num_of_labels):
-            theta_i, b_i = self.get_theta_b_i(i)
-            l2_sum += math.pow(np.inner(theta_i, theta_i), 2)
-        l2_sum = math.sqrt(l2_sum)
 
         for i in range(num_of_labels):
             theta_i, b_i = self.get_theta_b_i(i)
@@ -147,7 +144,7 @@ class Model():
             for j in range(training_set_shape):
                 x_j = x[j]
                 try:
-                    derivative = x_j * self.calc_exp(theta_i, b_i, x) / (self.calc_exp_sum(x) - r_i) + self.l2_regularization_coefficient * np.inner(theta_i, theta_i) * l2_sum
+                    derivative = x_j * self.calc_exp(theta_i, b_i, x) / (self.calc_exp_sum(x) - r_i) + 2 * self.l2_regularization_coefficient * theta_i[j]
                 except RuntimeWarning:
                     print(f"{theta_i=}")
                     print(f"{x=}")
