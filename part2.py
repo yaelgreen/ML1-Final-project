@@ -1,11 +1,8 @@
-import math
-from pprint import _safe_key
 from typing import Dict
 import numpy as np
-from part1 import random_indices, subset_of_data_set
+from part1 import random_indices
 import warnings
 warnings.filterwarnings("error")
-from sklearn.linear_model import LinearRegression
 
 training_set_size = 1000
 num_of_labels = 10
@@ -33,7 +30,7 @@ class Model():
         self.l2_regularization_coefficient = l2_regularization_coefficient
         self.standard_deviation = standard_deviation
         if not valid:
-            print("One or more of the parametres to the model is invalid")
+            print("One or more of the parameters to the model is invalid")
         self.wight_vectors = None
         self.biases = None
 
@@ -73,17 +70,23 @@ class Model():
         # init wight_vectors
         self.wight_vectors = np.random.normal(loc=0, scale=self.standard_deviation,
                                               size=num_of_labels * (training_set_shape + 1))
+        cross_entropy_losses = {}
+        hing_losses = {}
         for iteration_number in range(self.num_of_iterations):
             print(f'started {iteration_number} iteration')
             # Random batch
             training_indices = random_indices(self.batch_size, training_set_size)
             v_t = np.zeros(len(self.wight_vectors))
-            # batch = subset_of_data_set(training_set, i_t)
             for training_index in training_indices:
                 x = self.training_set[b'data'][training_index]
                 y = self.training_set[b'labels'][training_index]
                 v_t = self.momentum_coefficient * v_t - (1 - self.momentum_coefficient) * self.learning_rate * self.calc_derivative(x, y)
                 self.wight_vectors += v_t
+            cross_entropy_losses[iteration_number] = self.calc_cross_entropy_loss(self.training_set[b'data'], self.training_set[b'labels'])
+            print(f"iteration: {iteration_number} cross entropy losses: {cross_entropy_losses[iteration_number]}")
+            hing_losses[iteration_number] = self.calc_hinge_loss(self.training_set[b'data'], self.training_set[b'labels'])
+            print(
+                f"iteration: {iteration_number} hing losses: {hing_losses[iteration_number]}")
         return self.wight_vectors
 
     def training(self) -> None:
@@ -93,30 +96,63 @@ class Model():
             f.write(as_str)
         return theta
 
-    def inference(self, set_of_instances: np.ndarray) -> np.ndarray:
+    def inference_training_set(self):
         # if not self.wight_vectors or not self.biases:
         #     print("You need to train the model before you can run inference")
-        print('Inference')
+        inference_result = self.inference(self.training_set[b'data'])
         successes = 0
-        for i in range(9999):
-            print(f'image {i}')
-            x = self.training_set[b'data'][i]
-            y = self.training_set[b'labels'][i]
-            max_result = None
-            index = 0
-            for j in range(num_of_labels):
-                theta, b = self.get_theta_b_i(j)
-                result = np.inner(theta, x) + b
-                max_result = result if not max_result else max(result, max_result)
-                index = j if result == max_result else index
-            if y == index:
-               successes += 1
-        print(successes)
+        for i in range(0, training_set_size):
+            if inference_result[i][1] == self.training_set[b'labels'][i]:
+                successes += 1
+        print(f"successes: {successes}")
+
+    def single_inference(self, x):
+        max_result = None
+        prediction_label = 0
+        class_score = []
+        for j in range(num_of_labels):
+            theta, b = self.get_theta_b_i(j)
+            result = np.inner(theta, x) + b
+            class_score.append(result)
+            max_result = result if not max_result else max(result, max_result)
+            prediction_label = j if result == max_result else prediction_label
+        return class_score, prediction_label
+
+    def inference(self, set_of_instances: np.ndarray) -> np.ndarray:
+        result = {}
+        for i in range(set_of_instances.shape[0]):
+            class_score, prediction_label = self.single_inference(set_of_instances[i])
+            result[i] = (class_score, prediction_label)
+        return result
 
     def get_theta_b_i(self, i):
         theta_i = self.wight_vectors[i:i + training_set_shape]
         b_i = self.wight_vectors[i + training_set_shape]
         return theta_i, b_i
+
+    def calc_hinge_loss(self, training_set_data, training_set_labels):
+        loss = 0
+        for i in range(0, training_set_size):
+            x = training_set_data[i]
+            y = training_set_labels[i]
+            cur_loss = 0
+            r, prediction_label = self.single_inference(x)
+            for label in range(0, num_of_labels):
+                cur_loss = max(cur_loss, r[label] - r[y] + 1 if label != y else 0)
+            loss += cur_loss
+        return loss
+
+    def calc_cross_entropy_loss(self, training_set_data, training_set_labels):
+        loss = 0
+        for i in range(0, training_set_size):
+            x = training_set_data[i]
+            y = training_set_labels[i]
+            r, _ = self.single_inference(x)
+            sum = 0
+            for j in range(num_of_labels):
+                sum += np.exp(r[j])
+            loss += np.log(sum) - r[y]
+        return loss
 
     def calc_exp(self, theta_i, b_i, x):
         try:

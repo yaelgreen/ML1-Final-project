@@ -16,8 +16,8 @@ def main():
     model = Model(training_set, learning_rate, num_of_iterations, batch_size,
                    momentum_coefficient, l2_regularization_coefficient,
                    standard_deviation)
-    theta = model.training()
-    model.inference(theta)
+    model.training()
+    model.inference_training_set()
 
 
 if __name__ == "__main__":
