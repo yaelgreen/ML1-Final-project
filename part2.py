@@ -1,6 +1,7 @@
 from typing import Dict
 import numpy as np
 from part1 import random_indices
+import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("error")
 
@@ -17,7 +18,8 @@ class Model():
                  batch_size: int,
                  momentum_coefficient: float,
                  l2_regularization_coefficient: float,
-                 standard_deviation: float):
+                 standard_deviation: float,
+                 model_name: str):
         valid = self.verify_training_input(learning_rate, num_of_iterations,
                                            batch_size, momentum_coefficient,
                                            l2_regularization_coefficient,
@@ -29,6 +31,7 @@ class Model():
         self.momentum_coefficient = momentum_coefficient
         self.l2_regularization_coefficient = l2_regularization_coefficient
         self.standard_deviation = standard_deviation
+        self.model_name = model_name
         if not valid:
             print("One or more of the parameters to the model is invalid")
         self.wight_vectors = None
@@ -70,8 +73,8 @@ class Model():
         # init wight_vectors
         self.wight_vectors = np.random.normal(loc=0, scale=self.standard_deviation,
                                               size=num_of_labels * (training_set_shape + 1))
-        cross_entropy_losses = {}
-        hing_losses = {}
+        self.cross_entropy_losses = {}
+        self.hing_losses = {}
         for iteration_number in range(self.num_of_iterations):
             print(f'started {iteration_number} iteration')
             # Random batch
@@ -82,12 +85,21 @@ class Model():
                 y = self.training_set[b'labels'][training_index]
                 v_t = self.momentum_coefficient * v_t - (1 - self.momentum_coefficient) * self.learning_rate * self.calc_derivative(x, y)
                 self.wight_vectors += v_t
-            cross_entropy_losses[iteration_number] = self.calc_cross_entropy_loss(self.training_set[b'data'], self.training_set[b'labels'])
-            print(f"iteration: {iteration_number} cross entropy losses: {cross_entropy_losses[iteration_number]}")
-            hing_losses[iteration_number] = self.calc_hinge_loss(self.training_set[b'data'], self.training_set[b'labels'])
+            self.cross_entropy_losses[iteration_number] = self.calc_cross_entropy_loss(self.training_set[b'data'], self.training_set[b'labels'])
+            print(f"iteration: {iteration_number} cross entropy losses: {self.cross_entropy_losses[iteration_number]}")
+            self.hing_losses[iteration_number] = self.calc_hinge_loss(self.training_set[b'data'], self.training_set[b'labels'])
             print(
-                f"iteration: {iteration_number} hing losses: {hing_losses[iteration_number]}")
+                f"iteration: {iteration_number} hing losses: {self.hing_losses[iteration_number]}")
         return self.wight_vectors
+
+    def plot_losses(self):
+        fig, axs = plt.subplots(2)
+        plt_title = f'cross_entropy_loss_and_hing_loss_for_{self.model_name}'
+        fig.suptitle(plt_title)
+        axs[0].plot(list(self.cross_entropy_losses.values()))
+        axs[1].plot(list(self.hing_losses.values()))
+        plt.show()
+        fig.savefig(f"{plt_title}.png")
 
     def training(self) -> None:
         theta = self.sgd()
@@ -105,6 +117,7 @@ class Model():
             if inference_result[i][1] == self.training_set[b'labels'][i]:
                 successes += 1
         print(f"successes: {successes}")
+        return successes
 
     def single_inference(self, x):
         max_result = None
