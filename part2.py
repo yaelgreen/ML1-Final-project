@@ -1,6 +1,8 @@
+from textwrap import wrap
 from typing import Dict
 import numpy as np
-from part1 import random_indices
+from part1 import random_indices, create_training_and_validation_sets, \
+    convert_pixel_intensity
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("error")
@@ -95,10 +97,10 @@ class Model():
     def plot_losses(self):
         fig, axs = plt.subplots(2)
         plt_title = f'cross_entropy_loss_and_hing_loss_for_{self.model_name}'
-        fig.suptitle(plt_title)
+        fig.suptitle("\n".join(wrap(plt_title, 60)))
         axs[0].plot(list(self.cross_entropy_losses.values()))
         axs[1].plot(list(self.hing_losses.values()))
-        plt.show()
+        # plt.show()
         fig.savefig(f"{plt_title}.png")
 
     def training(self) -> None:
@@ -116,7 +118,7 @@ class Model():
         for i in range(0, training_set_size):
             if inference_result[i][1] == self.training_set[b'labels'][i]:
                 successes += 1
-        print(f"successes: {successes}")
+        print(f"number of successes for model {self.model_name}: {successes}")
         return successes
 
     def single_inference(self, x):
@@ -207,5 +209,29 @@ class Model():
         return np.array(vector)
 
 
-# model = Model()
-# model.training(self)
+if __name__ == "__main__":
+    training_set, validation_set, meta = create_training_and_validation_sets()
+    convert_pixel_intensity(training_set)
+    convert_pixel_intensity(validation_set)
+    learning_rate = [0.01, 0.1, 0.5]
+    num_of_iterations = 50
+    batch_size = [10, 20, 30]
+    momentum_coefficient = [0.2, 0.3, 0.5]
+    l2_regularization_coefficient = [0.4, 0.5, 0.6]
+    standard_deviation = [0.5, 1, 1.5]
+    for i in range(3):
+        for j in range(3):
+            for k in range(3):
+                for l in range(3):
+                    for m in range(3):
+                        model_name = f"learning rate {learning_rate[i]} number of iterations {num_of_iterations}"\
+                                     f" batch_size {batch_size[j]} momentum coefficient {momentum_coefficient[k]} "\
+                                     f"l2 regularization coefficient {l2_regularization_coefficient[l]}" \
+                                     f"standard_deviation {standard_deviation[m]}"
+                        print(model_name)
+                        model = Model(training_set, learning_rate[i], num_of_iterations, batch_size[j],
+                                      momentum_coefficient[k], l2_regularization_coefficient[l],
+                                      standard_deviation[m], model_name.replace(" ", "_").replace(".", "_"))
+                        model.training()
+                        model.plot_losses()
+                        model.inference_training_set()

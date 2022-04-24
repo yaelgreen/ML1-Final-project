@@ -95,12 +95,13 @@ def convert_pixel_intensity(data_set):
     data_set[b'data'] = mapping(data_set[b'data'])
 
 
-# download_and_extract_cifar_10_dataset()
-# training_set, validation_set, meta = create_training_and_validation_sets()
-# plot_random_images(training_set, meta, "training_set_images")
-# plot_random_images(validation_set, meta, "validation_set_images")
-# convert_pixel_intensity(training_set)
-# convert_pixel_intensity(validation_set)
+if __name__ == "__main__":
+    download_and_extract_cifar_10_dataset()
+    training_set, validation_set, meta = create_training_and_validation_sets()
+    plot_random_images(training_set, meta, "training_set_images")
+    plot_random_images(validation_set, meta, "validation_set_images")
+    convert_pixel_intensity(training_set)
+    convert_pixel_intensity(validation_set)
 
 
 
