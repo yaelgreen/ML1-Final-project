@@ -26,6 +26,8 @@ class Model():
                                            batch_size, momentum_coefficient,
                                            l2_regularization_coefficient,
                                            standard_deviation)
+        if not valid:
+            print("One or more of the parameters to the model is invalid")
         self.training_set = training_set
         self.learning_rate = learning_rate
         self.num_of_iterations = num_of_iterations
@@ -34,8 +36,6 @@ class Model():
         self.l2_regularization_coefficient = l2_regularization_coefficient
         self.standard_deviation = standard_deviation
         self.model_name = model_name
-        if not valid:
-            print("One or more of the parameters to the model is invalid")
         self.wight_vectors = None
         self.biases = None
 
