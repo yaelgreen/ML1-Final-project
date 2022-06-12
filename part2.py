@@ -195,7 +195,7 @@ class Model():
             for j in range(training_set_shape):
                 x_j = x[j]
                 try:
-                    derivative = x_j * self.calc_exp(theta_i, b_i, x) / (self.calc_exp_sum(x) - r_i) + 2 * self.l2_regularization_coefficient * theta_i[j]
+                    derivative = x_j * (self.calc_exp(theta_i, b_i, x) / self.calc_exp_sum(x) - r_i) + 2 * self.l2_regularization_coefficient * theta_i[j]
                 except RuntimeWarning:
                     print(f"{theta_i=}")
                     print(f"{x=}")
@@ -204,7 +204,7 @@ class Model():
                     print(self.calc_exp(theta_i, b_i, x))
                     print(self.calc_exp_sum(x))
                 vector.append(derivative)
-            derivative_b = self.calc_exp(theta_i, b_i, x) / (self.calc_exp_sum(x) - r_i)
+            derivative_b = (self.calc_exp(theta_i, b_i, x) / self.calc_exp_sum(x) ) - r_i
             vector.append(derivative_b)
         return np.array(vector)
 
