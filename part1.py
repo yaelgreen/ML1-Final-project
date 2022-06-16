@@ -92,7 +92,7 @@ def plot_random_images(data_set: Dict, meta: Dict, plt_title="plot",
 
 
 def convert_pixel_intensity(data_set):
-    data_set[b'data'] = mapping(data_set[b'data'])
+    data_set[b'data'] = np.array([mapping(x) for x in data_set[b'data']])
 
 
 if __name__ == "__main__":

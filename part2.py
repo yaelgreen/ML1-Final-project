@@ -102,6 +102,7 @@ class Model():
         axs[1].plot(list(self.hing_losses.values()))
         # plt.show()
         fig.savefig(f"{plt_title}.png")
+        plt.close()
 
     def training(self) -> None:
         theta = self.sgd()

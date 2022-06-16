@@ -42,16 +42,16 @@ def plot_hinge_loss_vs_model_capacity(losses, model_name):
     fig, axs = plt.subplots(2)
     plt_title = f'hing_loss_vs_model_capacity_for_{model_name}'
     fig.suptitle("\n".join(wrap(plt_title, 60)))
+    print(losses['training'])
     axs[0].plot(list(losses['training'].values()))
     axs[1].plot(list(losses['validation'].values()))
     # plt.show()
     fig.savefig(f"{plt_title}.png")
 
 
-if __name__ == "__main__":
+def main_part_3(training_set, validation_set, meta):
     # For regularization
     # optimize over the training set
-    training_set, validation_set, meta = create_training_and_validation_sets()
     convert_pixel_intensity(training_set)
     convert_pixel_intensity(validation_set)
     batch_size = 30
@@ -99,3 +99,7 @@ if __name__ == "__main__":
         # generate a plot showing training and validation errors vs. model capacity
         plot_hinge_loss_vs_model_capacity(losses, model_name)
 
+
+if __name__ == "__main__":
+    training_set, validation_set, meta = create_training_and_validation_sets()
+    main_part_3(training_set, validation_set, meta)
