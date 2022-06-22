@@ -42,7 +42,6 @@ def plot_hinge_loss_vs_model_capacity(losses, model_name):
     fig, axs = plt.subplots(2)
     plt_title = f'hing_loss_vs_model_capacity_for_{model_name}'
     fig.suptitle("\n".join(wrap(plt_title, 60)))
-    print(losses['training'])
     axs[0].plot(list(losses['training'].values()))
     axs[1].plot(list(losses['validation'].values()))
     # plt.show()
@@ -56,16 +55,17 @@ def main_part_3(training_set, validation_set, meta):
     convert_pixel_intensity(validation_set)
     batch_size = 30
     learning_rate = 0.1
-    num_of_iterations = 30
+    num_of_iterations = 10
     momentum_coefficient = 0.3
     standard_deviation = 1
     l2_regularization = [0.05, 0.5, 1]
     losses = {'training': {}, 'validation': {}}
+    training_set_shape = 3072
     for l in l2_regularization:
         model_name = f"l2_regularization_{l2_regularization}"
         model = Model(training_set, learning_rate, num_of_iterations,
                       batch_size, momentum_coefficient, l, standard_deviation,
-                      model_name)
+                      training_set_shape, model_name)
         model.training()
         # measure the classification error
         losses['training'][l] = model.hing_losses[num_of_iterations-1]
@@ -87,7 +87,7 @@ def main_part_3(training_set, validation_set, meta):
         training_set_dim_d = instance_dimension_reduction(training_set, d)
         model = Model(training_set_dim_d, learning_rate, num_of_iterations,
                       batch_size, momentum_coefficient, l2_regularization,
-                      standard_deviation,
+                      standard_deviation, training_set_shape,
                       model_name)
         model.training()
         # measure the classification error

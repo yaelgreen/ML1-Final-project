@@ -1,12 +1,7 @@
 import math
-from part1 import create_training_and_validation_sets, plot_image, \
-    convert_pixel_intensity
+from part1 import create_training_and_validation_sets, convert_pixel_intensity
 from part2 import Model
-import part2
-import matplotlib.pyplot as plt
 import numpy as np
-
-from part3 import plot_hinge_loss_vs_model_capacity
 
 weight = height = 32
 counter = 0
@@ -16,7 +11,6 @@ def to_greyscale(img):
 
 def calc_gradient_images(img):
     global counter
-    print(counter)
     counter += 1
     img = to_greyscale(img)
     new_img = []
@@ -55,17 +49,18 @@ def main_part_4(training_set, validation_set, meta):
     l2_regularization = 0.5
     losses = {'training': {}, 'validation': {}}
     model_name = f"HOG"
-    part2.training_set_shape = 32*32*2
+    training_set_shape = 32*32*2
     convert_pixel_intensity(training_set)
     convert_pixel_intensity(validation_set)
     model = Model(training_set, learning_rate, num_of_iterations,
                   batch_size, momentum_coefficient, l2_regularization,
-                  standard_deviation, model_name)
+                  standard_deviation, training_set_shape, model_name)
     model.training()
     # measure the classification error
     losses['training'] = model.hing_losses[num_of_iterations-1]
     losses['validation'] = model.calc_hinge_loss(validation_set[b'data'], validation_set[b'labels'])
     print(losses)
+
 
 if __name__ == '__main__':
     training_set, validation_set, meta = create_training_and_validation_sets()

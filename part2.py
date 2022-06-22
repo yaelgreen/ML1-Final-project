@@ -2,14 +2,13 @@ from textwrap import wrap
 from typing import Dict
 import numpy as np
 from part1 import random_indices, create_training_and_validation_sets, \
-    convert_pixel_intensity, plot_random_images
+    convert_pixel_intensity
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("error")
 
 training_set_size = 1000
 num_of_labels = 10
-training_set_shape = 3072  # 1024 * 3
 
 
 class Model():
@@ -21,6 +20,7 @@ class Model():
                  momentum_coefficient: float,
                  l2_regularization_coefficient: float,
                  standard_deviation: float,
+                 training_set_shape: int,
                  model_name: str):
         valid = self.verify_training_input(learning_rate, num_of_iterations,
                                            batch_size, momentum_coefficient,
@@ -35,6 +35,7 @@ class Model():
         self.momentum_coefficient = momentum_coefficient
         self.l2_regularization_coefficient = l2_regularization_coefficient
         self.standard_deviation = standard_deviation
+        self.training_set_shape = training_set_shape
         self.model_name = model_name
         self.wight_vectors = None
         self.biases = None
@@ -74,7 +75,7 @@ class Model():
     def sgd(self):
         # init wight_vectors
         self.wight_vectors = np.random.normal(loc=0, scale=self.standard_deviation,
-                                              size=num_of_labels * (training_set_shape + 1))
+                                              size=num_of_labels * (self.training_set_shape + 1))
         self.cross_entropy_losses = {}
         self.hing_losses = {}
         for iteration_number in range(self.num_of_iterations):
@@ -142,8 +143,8 @@ class Model():
         return result
 
     def get_theta_b_i(self, i):
-        theta_i = self.wight_vectors[i:i + training_set_shape]
-        b_i = self.wight_vectors[i + training_set_shape]
+        theta_i = self.wight_vectors[i:i + self.training_set_shape]
+        b_i = self.wight_vectors[i + self.training_set_shape]
         return theta_i, b_i
 
     def calc_hinge_loss(self, training_set_data, training_set_labels):
@@ -182,7 +183,14 @@ class Model():
         sum = 0
         for j in range(num_of_labels):
             theta_j, b_j = self.get_theta_b_i(j)
-            sum += self.calc_exp(theta_j, b_j, x)
+            try:
+                exp = self.calc_exp(theta_j, b_j, x)
+                sum += exp
+            except (RuntimeWarning, TypeError):
+                print(f"{theta_j=}")
+                print(f"{x=}")
+                print(f"{b_j=}")
+                print(f"{exp}=")
         return sum
 
     def calc_derivative(self, x, y):
@@ -193,7 +201,7 @@ class Model():
         for i in range(num_of_labels):
             theta_i, b_i = self.get_theta_b_i(i)
             r_i = r[i]
-            for j in range(training_set_shape):
+            for j in range(self.training_set_shape):
                 x_j = x[j]
                 try:
                     derivative = x_j * (self.calc_exp(theta_i, b_i, x) / self.calc_exp_sum(x) - r_i) + 2 * self.l2_regularization_coefficient * theta_i[j]
@@ -209,8 +217,8 @@ class Model():
             vector.append(derivative_b)
         return np.array(vector)
 
-
 if __name__ == "__main__":
+
     training_set, validation_set, meta = create_training_and_validation_sets()
     convert_pixel_intensity(training_set)
     convert_pixel_intensity(validation_set)
@@ -248,6 +256,7 @@ if __name__ == "__main__":
     }
     }
     num_of_iterations = 10
+    training_set_shape = 3072
     for i in parameters:
         model_name = f"learning rate {parameters[i]['learning_rate']} number of iterations {num_of_iterations}"\
                      f" batch_size {parameters[i]['batch_size']} momentum coefficient {parameters[i]['momentum_coefficient']} "\
@@ -256,10 +265,11 @@ if __name__ == "__main__":
         print(model_name)
         model = Model(training_set, parameters[i]['learning_rate'], num_of_iterations, parameters[i]['batch_size'],
                       parameters[i]['momentum_coefficient'], parameters[i]['l2_regularization_coefficient'],
-                      parameters[i]['standard_deviation'], model_name.replace(" ", "_").replace(".", "_"))
+                      parameters[i]['standard_deviation'], training_set_shape, model_name.replace(" ", "_").replace(".", "_"))
         model.training()
         model.plot_losses()
         if parameters[i]['plot_images']:
             plot_random_images(training_set, meta, "training_set_images")
             plot_random_images(validation_set, meta, "validation_set_images")
+
 
