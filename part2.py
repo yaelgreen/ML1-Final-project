@@ -2,7 +2,7 @@ from textwrap import wrap
 from typing import Dict
 import numpy as np
 from part1 import random_indices, create_training_and_validation_sets, \
-    convert_pixel_intensity
+    convert_pixel_intensity, plot_random_images
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("error")
@@ -100,8 +100,8 @@ class Model():
         fig.suptitle("\n".join(wrap(plt_title, 60)))
         axs[0].plot(list(self.cross_entropy_losses.values()))
         axs[1].plot(list(self.hing_losses.values()))
-        # plt.show()
-        fig.savefig(f"{plt_title}.png")
+        plt.show()
+        # fig.savefig(f"{plt_title}.png")
         plt.close()
 
     def training(self) -> None:
@@ -214,25 +214,52 @@ if __name__ == "__main__":
     training_set, validation_set, meta = create_training_and_validation_sets()
     convert_pixel_intensity(training_set)
     convert_pixel_intensity(validation_set)
-    learning_rate = [0.01, 0.1, 0.5]
-    num_of_iterations = 50
-    batch_size = [10, 20, 30]
-    momentum_coefficient = [0.2, 0.3, 0.5]
-    l2_regularization_coefficient = [0.4, 0.5, 0.6]
-    standard_deviation = [0.5, 1, 1.5]
-    for i in range(3):
-        for j in range(3):
-            for k in range(3):
-                for l in range(3):
-                    for m in range(3):
-                        model_name = f"learning rate {learning_rate[i]} number of iterations {num_of_iterations}"\
-                                     f" batch_size {batch_size[j]} momentum coefficient {momentum_coefficient[k]} "\
-                                     f"l2 regularization coefficient {l2_regularization_coefficient[l]}" \
-                                     f"standard_deviation {standard_deviation[m]}"
-                        print(model_name)
-                        model = Model(training_set, learning_rate[i], num_of_iterations, batch_size[j],
-                                      momentum_coefficient[k], l2_regularization_coefficient[l],
-                                      standard_deviation[m], model_name.replace(" ", "_").replace(".", "_"))
-                        model.training()
-                        model.plot_losses()
-                        model.inference_training_set()
+    parameters = {1: {
+        'learning_rate': 0.01,
+        'batch_size': 10,
+        'momentum_coefficient': 0.2,
+        'l2_regularization_coefficient': 0.5,
+        'standard_deviation': 0.5,
+        'plot_images': True,
+    },
+        2: {
+            'learning_rate': 0.01,
+            'batch_size': 10,
+            'momentum_coefficient': 0.3,
+            'l2_regularization_coefficient': 0.4,
+            'standard_deviation': 0.5,
+            'plot_images': False,
+    },
+        3: {
+            'learning_rate': 0.01,
+            'batch_size': 10,
+            'momentum_coefficient': 0.3,
+            'l2_regularization_coefficient': 0.4,
+            'standard_deviation': 1.5,
+            'plot_images': False,
+    },
+        4: {
+            'learning_rate': 0.01,
+            'batch_size': 10,
+            'momentum_coefficient': 0.3,
+            'l2_regularization_coefficient': 0.6,
+            'standard_deviation': 1.5,
+            'plot_images': False,
+    }
+    }
+    num_of_iterations = 10
+    for i in parameters:
+        model_name = f"learning rate {parameters[i]['learning_rate']} number of iterations {num_of_iterations}"\
+                     f" batch_size {parameters[i]['batch_size']} momentum coefficient {parameters[i]['momentum_coefficient']} "\
+                     f"l2 regularization coefficient {parameters[i]['l2_regularization_coefficient']}" \
+                     f"standard_deviation {parameters[i]['standard_deviation']}"
+        print(model_name)
+        model = Model(training_set, parameters[i]['learning_rate'], num_of_iterations, parameters[i]['batch_size'],
+                      parameters[i]['momentum_coefficient'], parameters[i]['l2_regularization_coefficient'],
+                      parameters[i]['standard_deviation'], model_name.replace(" ", "_").replace(".", "_"))
+        model.training()
+        model.plot_losses()
+        if parameters[i]['plot_images']:
+            plot_random_images(training_set, meta, "training_set_images")
+            plot_random_images(validation_set, meta, "validation_set_images")
+
