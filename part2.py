@@ -112,7 +112,7 @@ class Model():
             f.write(as_str)
         return theta
 
-    def inference_training_set(self):
+    def inference_training_set(self, meta):
         # if not self.wight_vectors or not self.biases:
         #     print("You need to train the model before you can run inference")
         inference_result = self.inference(self.training_set[b'data'])
@@ -120,8 +120,40 @@ class Model():
         for i in range(0, training_set_size):
             if inference_result[i][1] == self.training_set[b'labels'][i]:
                 successes += 1
+        self.plot_random_images(self.training_set, meta, inference_result, "inference")
         print(f"number of successes for model {self.model_name}: {successes}")
         return successes
+
+    def plot_image(self, data, label, image_index=0):
+        # get image and RGB channels from dataset
+        image = data[b'data'][image_index, :]
+        image_r = image[0:1024].reshape(32, 32)
+        image_g = image[1024:2048].reshape(32, 32)
+        image_b = image[2048:].reshape(32, 32)
+        # plot image using RGB channels
+        img = np.dstack((image_r, image_g, image_b))
+        return img, label
+
+    def plot_random_images(self, data_set: Dict, meta, inference_results,
+                           plt_title="plot", number_of_images: int = 50) -> None:
+        # choose random 50 images
+        indices = random_indices(999, number_of_images)
+        # plot images
+        n_col = 10
+        n_row = int(number_of_images / n_col)
+        imgs = [
+            self.plot_image(data_set,
+                            meta[b'label_names'][inference_results[image_index][1]],
+                            image_index) for image_index in indices]
+        _, axs = plt.subplots(n_row, n_col, figsize=(32, 32))
+        axs = axs.flatten()
+        for img, ax in zip(imgs, axs):
+            ax.imshow(img[0])
+            ax.set_title(img[1])
+        plt.subplots_adjust(top=0.9)
+        plt.suptitle(plt_title)
+        plt.show()
+        # plt.savefig(f"{plt_title}.png")
 
     def single_inference(self, x):
         max_result = None
@@ -255,7 +287,7 @@ if __name__ == "__main__":
             'plot_images': False,
     }
     }
-    num_of_iterations = 10
+    num_of_iterations = 15
     training_set_shape = 3072
     for i in parameters:
         model_name = f"learning rate {parameters[i]['learning_rate']} number of iterations {num_of_iterations}"\
@@ -269,7 +301,4 @@ if __name__ == "__main__":
         model.training()
         model.plot_losses()
         if parameters[i]['plot_images']:
-            plot_random_images(training_set, meta, "training_set_images")
-            plot_random_images(validation_set, meta, "validation_set_images")
-
-
+            model.inference_training_set(meta)
